@@ -14,16 +14,20 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
-def set_cell_face(cells,i,j,bi,bval):
-    # for changing a cell boundary
+def set_cell_face(cells:list,i:int,j:int,bi:int,bval:int) -> list:
+    """
+    For changing a cell boundary.
+    """
     cells[i][j][bi] = bval
 
     return cells
     
 
-def init_field(xdim, ydim):
-    # initializes the field cells
-    # all of them with open boundaries
+def init_field(xdim:int, ydim:int) -> list:
+    """
+    Initializes the field cells.
+    all of them with open boundaries.
+    """
     cells = []
     for i in np.arange(xdim):
         cells.append([])
@@ -34,11 +38,12 @@ def init_field(xdim, ydim):
     return cells
     
     
-def init_maze(cells, xdim, ydim):
-    # initializes the maze boundaries
-    # 0 is pass-through
-    # 1 is solid
-    
+def init_maze(cells:list, xdim:int, ydim:int) -> list:
+    """
+    Initializes the maze boundaries.
+     0 is pass-through
+     1 is solid
+    """
     # West boundary
     for j in np.arange(ydim):
         cells = set_cell_face(cells,0,j,0,1)
@@ -58,9 +63,12 @@ def init_maze(cells, xdim, ydim):
     return cells
     
     
-def build_exit(cells, i1,j1, i2,j2, bi):
-    # defines the exit in the specified cells
-    # on the face specified by bi
+def build_exit(cells:list, i1:int,j1:int, i2:int,j2:int, bi:int) -> list:
+    """
+    Defines the exit in the specified cells
+    on the face specified by bi.
+     3 is exit
+    """
     if i1 == i2 :
         for j in np.arange(j1,j2):
             cells = set_cell_face(cells, i1,j,bi,3)
@@ -68,15 +76,17 @@ def build_exit(cells, i1,j1, i2,j2, bi):
         for i in np.arange(i1,i2):
             cells = set_cell_face(cells, i,j1,bi,3)
     else:
-        print('!!! Problem with build_exit!')
+        raise SystemExit('!!! Problem with build_exit! Check that i1 == i2 OR j1 == j2.')
     
     return cells
     
     
-def build_inner_wall(cells, i1,j1, i2,j2):
-    # places a wall on the East boundary of a line of cells
-    # and the West boundary on the cells to the east of the line
-    # or South, and North on the cells to the south
+def build_inner_wall(cells:list, i1:int,j1:int, i2:int,j2:int) -> list:
+    """
+    places a wall on the East boundary of a line of cells
+    and the West boundary on the cells to the east of the line
+    or South, and North on the cells to the south
+    """
     if i1 == i2 :
         for j in np.arange(j1,j2+1):
             cells = set_cell_face(cells, i1,j, 1,1)
@@ -86,14 +96,15 @@ def build_inner_wall(cells, i1,j1, i2,j2):
             cells = set_cell_face(cells, i,j1,3,1)
             cells = set_cell_face(cells, i,j1+1,2,1)
     else:
-        print('!!! Problem with build_inner_wall!')
+        raise SystemExit('!!! Problem with build_inner_wall! Check that i1 == i2 OR j1 == j2.')
 
     return cells
     
     
-def particle_step(i,j, s):
-    # pushes a particle to the next cell in direction s
-    
+def particle_step(i:int,j:int, s:int) -> list:
+    """
+    pushes a particle to the next cell in direction s
+    """
     # to the West
     if s == 0: i = i-1
     # to the East
@@ -106,10 +117,12 @@ def particle_step(i,j, s):
     return [i,j]
     
 
-def maze_walk(cells, starti, startj):
-    # returns the steps of a random walk through the maze
-    # as a list of lists (the indices of where the particle
-    # is at this step)
+def maze_walk(cells:list, starti:int, startj:int) -> list:
+    """
+    returns the steps of a random walk through the maze
+    as a list of lists (the indices of where the particle
+    is at this step)
+    """
     steps = []
     particle_exit = False
 
@@ -134,30 +147,32 @@ def maze_walk(cells, starti, startj):
         elif cells[i][j][s] == 0 :
             steps.append(particle_step(i,j, s))
         else:
-            print('!!! Problem with maze_walk!')
+            raise SystemExit('!!! Problem with maze_walk! Check cells[{}][{}][{}] for valid boundary type.'.format(i,j,s))
             break
             
     return steps
     
-def print_maze(cells, si = 0, sj = 0):
-    # to print the maze
-    # start cell is shaded \u2592
-    # no boundary cells are whitespace
-    # corners are 3-quadrant blocks
-    #   southwest \u2599
-    #   southeast \u259F
-    #   northwest \u259B
-    #   northeast \u259C
-    # sides are half blocks
-    #   west  \u258C
-    #   east  \u2590
-    #   north \u2580
-    #   south \u2584
-    # exits are thin half blocks
-    #   west  \u258F
-    #   east  \u2595
-    #   north \u2594
-    #   south \u2581
+def print_maze(cells:list, print_i:bool = False, si:int = 0, sj:int = 0) -> str:
+    """
+    to print the maze
+    start cell is shaded \u2592
+    no boundary cells are whitespace
+    corners are 3-quadrant blocks
+      southwest \u2599
+      southeast \u259F
+      northwest \u259B
+      northeast \u259C
+    sides are half blocks
+      west  \u258C
+      east  \u2590
+      north \u2580
+      south \u2584
+    exits are thin half blocks (sides only)
+      west  \u258F
+      east  \u2595
+      north \u2594
+      south \u2581
+    """
     field = ''
     for j in np.arange(len(cells[0])):
         row = ''
@@ -178,7 +193,7 @@ def print_maze(cells, si = 0, sj = 0):
             if cells[i][j] == [0,3,0,0]: a = "\u2595"
             if cells[i][j] == [0,0,3,0]: a = "\u2594"
             if cells[i][j] == [0,0,0,3]: a = "\u2581"
-            if i == si and j == sj: a = "\u2592"
+            if print_i and i == si and j == sj: a = "\u2592"
             row = row + a
         field = field + "\n" + row
     
