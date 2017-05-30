@@ -43,7 +43,12 @@ def init_maze(cells:list, xdim:int, ydim:int) -> list:
     Initializes the maze boundaries.
      0 is pass-through
      1 is solid
-    """
+    """    
+    x_max = len(cells)
+    y_max = len(cells[0])
+    if xdim > x_max or ydim > y_max :
+        raise SystemExit('!!! Problem with init_maze! Check that maze is smaller than or equal to field.')
+    
     # West boundary
     for j in np.arange(ydim):
         cells = set_cell_face(cells,0,j,0,1)
@@ -65,9 +70,10 @@ def init_maze(cells:list, xdim:int, ydim:int) -> list:
     
 def build_exit(cells:list, i1:int,j1:int, i2:int,j2:int, bi:int) -> list:
     """
-    Defines the exit in the specified cells
+    Builds the exit in the specified cells
     on the face specified by bi.
      3 is exit
+    Exits should be 1 dimensional.
     """
     if i1 == i2 :
         for j in np.arange(j1,j2):
@@ -83,12 +89,20 @@ def build_exit(cells:list, i1:int,j1:int, i2:int,j2:int, bi:int) -> list:
     
 def build_inner_wall(cells:list, i1:int,j1:int, i2:int,j2:int) -> list:
     """
-    places a wall on the East boundary of a line of cells
+    Builds a wall on the East boundary of a line of cells
     and the West boundary on the cells to the east of the line
     or South, and North on the cells to the south
+    Walls should be 1 dimensional.
+    Walls should not be built outside the field dimensions.
     """
+    x_max = len(cells)-1
+    y_max = len(cells[0])-1
+    if i1 or i2 not in np.arange(x_max) or j1 or j2 not in np.arange(y_max) :
+        raise SystemExit('!!! Problem with build_inner_wall! Check that wall is within field bounds.')
+    
     if i1 == i2 :
         for j in np.arange(j1,j2+1):
+            print(i1, j)
             cells = set_cell_face(cells, i1,j, 1,1)
             cells = set_cell_face(cells, i1+1,j, 0,1)
     elif j1 == j2 :
